@@ -39,4 +39,22 @@ impl PartialEq for b2BodyId {
     }
 }
 
+impl PartialEq for b2JointId {
+    fn eq(&self, other: &Self) -> bool {
+        self.index1 == other.index1
+            && self.world0 == other.world0
+            && self.revision == other.revision
+    }
+}
+
+impl PartialEq for b2ShapeId {
+    fn eq(&self, other: &Self) -> bool {
+        self.index1 == other.index1
+            && self.world0 == other.world0
+            && self.revision == other.revision
+    }
+}
+
 impl Eq for b2BodyId {}
+impl Eq for b2JointId {}
+impl Eq for b2ShapeId {}

@@ -7,6 +7,22 @@ use std::hash::{Hash, Hasher};
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
+impl Hash for b2JointId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.index1.hash(state);
+        self.world0.hash(state);
+        self.revision.hash(state);
+    }
+}
+
+impl Hash for b2ShapeId {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.index1.hash(state);
+        self.world0.hash(state);
+        self.revision.hash(state);
+    }
+}
+
 impl Hash for b2BodyId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.index1.hash(state);

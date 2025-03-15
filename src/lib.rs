@@ -11,7 +11,7 @@ impl Hash for b2JointId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.index1.hash(state);
         self.world0.hash(state);
-        self.revision.hash(state);
+        self.generation.hash(state);
     }
 }
 
@@ -19,7 +19,7 @@ impl Hash for b2ShapeId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.index1.hash(state);
         self.world0.hash(state);
-        self.revision.hash(state);
+        self.generation.hash(state);
     }
 }
 
@@ -27,7 +27,7 @@ impl Hash for b2BodyId {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.index1.hash(state);
         self.world0.hash(state);
-        self.revision.hash(state);
+        self.generation.hash(state);
     }
 }
 
@@ -35,7 +35,7 @@ impl PartialEq for b2BodyId {
     fn eq(&self, other: &Self) -> bool {
         self.index1 == other.index1
             && self.world0 == other.world0
-            && self.revision == other.revision
+            && self.generation == other.generation
     }
 }
 
@@ -43,7 +43,7 @@ impl PartialEq for b2JointId {
     fn eq(&self, other: &Self) -> bool {
         self.index1 == other.index1
             && self.world0 == other.world0
-            && self.revision == other.revision
+            && self.generation == other.generation
     }
 }
 
@@ -51,7 +51,7 @@ impl PartialEq for b2ShapeId {
     fn eq(&self, other: &Self) -> bool {
         self.index1 == other.index1
             && self.world0 == other.world0
-            && self.revision == other.revision
+            && self.generation == other.generation
     }
 }
 

@@ -53,37 +53,34 @@ fn main() {
 
     let mut box2d_config = cmake::Config::new("box2d"); // Path to Box2D source vendored in the crate
 
-    // Common CMake definitions
-    box2d_config
+    let mut box2d_config = box2d_config
         .define("BOX2D_BUILD_UNIT_TESTS", "OFF")
+        .define("BOX2D_UNIT_TESTS", "OFF")
         .define("BOX2D_BUILD_TESTBED", "OFF")
         .define("BOX2D_BUILD_DOCS", "OFF")
+        .define("BOX2D_USER_SETTINGS", "OFF")
+        .define("BUILD_SHARED_LIBS", "OFF")
         .define("BOX2D_SAMPLES", "OFF")
         .define("BOX2D_BENCHMARKS", "OFF")
+        .define("BOX2D_DOCS", "OFF")
         .define("BOX2D_PROFILE", "OFF")
-        .define("BOX2D_VALIDATE", "ON") // Keep validation on for debugging
-        .define("ENKITS_BUILD_EXAMPLES", "OFF");
-    // CMAKE_INSTALL_LIBDIR etc. are for the `install` step by CMake,
-    // the `cmake` crate makes build artifacts available relative to `dst` (e.g., dst/lib, dst/bin)
-
-    // Profile specific CMake settings
-    let profile = env::var("PROFILE").unwrap_or_default();
-    if profile == "release" {
-        box2d_config.define("CMAKE_BUILD_TYPE", "Release");
-    } else {
-        box2d_config.define("CMAKE_BUILD_TYPE", "Debug");
-    }
+        .define("BOX2D_VALIDATE", "ON")
+        .define("ENKITS_BUILD_EXAMPLES", "OFF")
+        .define("CMAKE_INSTALL_LIBDIR", "lib")
+        .define("CMAKE_INSTALL_BINDIR", "bin")
+        .define("CMAKE_INSTALL_INCLUDEDIR", "include")
+        .define("CMAKE_BUILD_TYPE", "Release");
 
     #[cfg(feature = "no_avx2")]
     {
-        box2d_config.define("BOX2D_AVX2", "OFF");
+        // for compatibility we can do this, itll make it slower tho so its not default
+        box2d_config = box2d_config.define("BOX2D_AVX2", "OFF");
     }
     // (Add other CMake defines like BOX2D_ENABLE_SIMD if needed, based on Box2D's CMakeLists.txt defaults)
     // box2d_config.define("BOX2D_ENABLE_SIMD", "ON");
 
     // --- Non-Windows (Linux, macOS, etc.): Build as a Static Library ---
     println!("cargo:rustc-link-lib=static=box2d");
-    box2d_config.define("BUILD_SHARED_LIBS", "OFF");
 
     let dst = box2d_config.build();
     println!("cargo:rustc-link-search=native={}/lib", dst.display());

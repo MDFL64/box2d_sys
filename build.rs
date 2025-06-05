@@ -22,16 +22,13 @@ fn main() {
         if !prebuilt_path.exists() {
             panic!(
                 "The 'use_prebuilt_mingw_dll' feature is enabled, but the directory for prebuilt libraries does not exist: {:?}.\n\
-                 Please create this directory and place your MinGW-compiled box2d.dll and libbox2d.dll.a (or box2d.dll.a) into it.",
+                 Please create this directory and place your MinGW-compiled box2d.dll and box2d.lib (or box2d.lib (or box2d.lib)) into it.",
                 prebuilt_path
             );
         }
-        if !prebuilt_path.join("box2d.dll").exists()
-            || !(prebuilt_path.join("libbox2d.dll.a").exists()
-                || prebuilt_path.join("box2d.dll.a").exists())
-        {
+        if !prebuilt_path.join("box2d.dll").exists() || !prebuilt_path.join("box2d.lib").exists() {
             panic!(
-                "The 'use_prebuilt_mingw_dll' feature is enabled, but box2d.dll and/or its import library (libbox2d.dll.a or box2d.dll.a) were not found in {:?}.",
+                "The 'use_prebuilt_mingw_dll' feature is enabled, but box2d.dll and/or its import library (box2d.lib) were not found in {:?}.",
                 prebuilt_path
             );
         }

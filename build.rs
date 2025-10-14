@@ -1,3 +1,5 @@
+#![allow(unused_mut)]
+
 use std::env;
 use std::path::{Path, PathBuf};
 
@@ -13,43 +15,11 @@ fn main() {
 
     // Check for our feature flag first
     if target_os == "windows" && cfg!(feature = "use_prebuilt_mingw_dll") {
-        // --- Logic for using a pre-built MinGW DLL ---
-        println!("cargo:rustc-link-lib=dylib=box2d"); // Name of your DLL (without .dll prefix/suffix)
-
-        let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-        let prebuilt_path = manifest_dir.join("prebuilt_mingw_libs");
-
-        if !prebuilt_path.exists() {
-            panic!(
-                "The 'use_prebuilt_mingw_dll' feature is enabled, but the directory for prebuilt libraries does not exist: {:?}.\n\
-                 Please create this directory and place your MinGW-compiled box2d.dll and box2d.lib (or box2d.lib (or box2d.lib)) into it.",
-                prebuilt_path
-            );
-        }
-        if !prebuilt_path.join("box2d.dll").exists() || !prebuilt_path.join("box2d.lib").exists() {
-            panic!(
-                "The 'use_prebuilt_mingw_dll' feature is enabled, but box2d.dll and/or its import library (box2d.lib) were not found in {:?}.",
-                prebuilt_path
-            );
-        }
-
-        println!("cargo:rustc-link-search=native={}", prebuilt_path.display());
-
-        // Bindgen needs the Box2D C header files.
-        // Assuming they are vendored in `box2d/include/` within the crate.
-        let box2d_vendored_include_path = manifest_dir.join("box2d").join("include");
-        if !box2d_vendored_include_path.exists() {
-            panic!(
-                "Box2D include path for prebuilt DLL scenario does not exist: {:?}. \
-                 Ensure Box2D headers are vendored in box2d/include/ within the crate.",
-                box2d_vendored_include_path
-            );
-        }
-        generate_bindings(&box2d_vendored_include_path);
-
-        // Return early as we are not building Box2D with CMake in this path
-        return;
+        panic!("functionality removed");
     }
+
+    let crate_dir = env::current_dir().unwrap();
+    let fake_sys_include = format!("-I{}/fake_sys_headers",crate_dir.to_str().unwrap());
 
     let mut box2d_config = cmake::Config::new("box2d"); // Path to Box2D source vendored in the crate
 
@@ -69,7 +39,12 @@ fn main() {
         .define("CMAKE_INSTALL_LIBDIR", "lib")
         .define("CMAKE_INSTALL_BINDIR", "bin")
         .define("CMAKE_INSTALL_INCLUDEDIR", "include")
-        .define("CMAKE_BUILD_TYPE", "Release");
+        .define("CMAKE_BUILD_TYPE", "Release")
+    // extra hacks for wasm builds
+        .define("CMAKE_C_COMPILER_WORKS", "1")
+        .define("CMAKE_CXX_COMPILER_WORKS", "1")
+        .cflag(&fake_sys_include);
+        
 
     #[cfg(feature = "no_avx2")]
     {
@@ -84,11 +59,11 @@ fn main() {
 
     let dst = box2d_config.build();
     println!("cargo:rustc-link-search=native={}/lib", dst.display());
-    generate_bindings(&dst.join("include"));
+    generate_bindings(&dst.join("include"), &fake_sys_include);
 }
 
 // Helper function for bindgen to avoid code duplication
-fn generate_bindings(box2d_include_path: &Path) {
+fn generate_bindings(box2d_include_path: &Path, fake_sys_include: &str) {
     // Changed to &Path for flexibility
     if !box2d_include_path.exists() {
         panic!(
@@ -103,14 +78,17 @@ fn generate_bindings(box2d_include_path: &Path) {
 
     let bindings = bindgen::Builder::default()
         .header(wrapper_h_path.to_str().unwrap()) // Use path to wrapper.h
-        .clang_arg(format!("-I{}", box2d_include_path.display()))
+        //.clang_arg(format!("-I{}", box2d_include_path.display()))
+        .clang_arg(fake_sys_include)
+        .clang_arg("-fvisibility=default")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
-        .blocklist_item("FP_NAN")
+        /*.blocklist_item("FP_NAN")
         .blocklist_item("FP_INFINITE")
         .blocklist_item("FP_ZERO")
         .blocklist_item("FP_SUBNORMAL")
         .blocklist_item("FP_NORMAL")
         .blocklist_item("__mingw_ldbl_type_t") // Keep if any chance of MinGW toolchain for bindgen
+        //.emit_clang_ast() */
         .generate()
         .expect("Unable to generate bindings");
 

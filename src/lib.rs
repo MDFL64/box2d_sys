@@ -3,6 +3,8 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)] // just for now since we get literally over 300 warnings about improper c type with u128 rn
 
+pub mod math;
+
 use std::hash::{Hash, Hasher};
 
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));

@@ -3,7 +3,8 @@
 #![allow(non_snake_case)]
 #![allow(improper_ctypes)] // just for now since we get literally over 300 warnings about improper c type with u128 rn
 
-pub mod math;
+mod math;
+mod clib;
 
 use std::hash::{Hash, Hasher};
 
